@@ -1,0 +1,33 @@
+body,
+html,
+#root {
+  height: 100%;
+}
+
+.btn,
+.form-control {
+  border-radius: 0;
+}
+
+.btn[disabled] {
+  cursor: not-allowed;
+}
+
+.form-control:focus {
+  box-shadow: none;
+}
+
+.card-form {
+  border: 1px solid #ccc;
+  box-shadow: none;
+  width: 40%;
+}
+
+.bg-gradient {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(246, 246, 246, 1) 47%,
+    rgba(237, 237, 237, 1) 100%
+  );
+}
