@@ -83,6 +83,10 @@ router.put('/user/:id/upload', (req, res) => {
   form.uploadDir = './uploads'
   form.keepExtensions = true
 
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir)
+  }
+
   form.parse(req, async function(err, fields, files) {
     await setProfileFileName(req.params.id, files.photo.path.replace('uploads\\', ''))
     res.end()
