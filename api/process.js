@@ -12,7 +12,7 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       let row = await db.query('SELECT * FROM student WHERE ID=?', [id])
       if (row.length > 0 && code === decrypt(row[0].Code)) {
-        resolve(encrypt(JSON.stringify({ id, code: Code })))
+        resolve(encrypt(JSON.stringify({ id, code })))
       } else {
         reject()
       }
@@ -22,7 +22,7 @@ module.exports = {
     let { id, code, firstname, lastname, birthday, course, yearGraduated } = info
     return new Promise(async (resolve, reject) => {
       let { affectedRows } = await db.query(`INSERT INTO student VALUES ?`, [
-        [id, encrypt(code), firstname, lastname, birthday, course, yearGraduated]
+        [[id, encrypt(code), firstname, lastname, birthday, course, yearGraduated, null]]
       ])
       if (affectedRows > 0) {
         resolve()

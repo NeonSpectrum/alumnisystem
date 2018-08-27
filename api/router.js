@@ -9,23 +9,17 @@ router.post('/user/login', (req, res) => {
 
   userLogin(id, code)
     .then(token => {
-      res.send({ success: true, token })
+      res.send({ success: true, id, token })
     })
     .catch(() => {
-      res.send({ success: false, token: null })
+      res.send({ success: false })
     })
 })
 
 router.put('/user/register', (req, res) => {
   console.log(req.body)
-  let { id, code, firstname, lastname } = req.body
 
-  userRegister({
-    id,
-    code,
-    firstname,
-    lastname
-  })
+  userRegister(req.body)
     .then(() => {
       res.send({ success: true })
     })
@@ -67,18 +61,20 @@ router.put('/admin/register', (req, res) => {
 
 router.get('/user/:id/data', (req, res) => {
   let { id } = req.params
+  console.log('Accessing data: ' + id)
 
   getUserInfo(id, req.token)
     .then(data => {
-      res.send({ success: true, data })
+      res.send({ success: true, info: data })
     })
     .catch(err => {
       console.log(err)
-      res.send({ success: false })
+      res.status(401).send({ success: false })
     })
 })
 
 router.put('/user/:id/upload', (req, res) => {
+  console.log(req.params.id)
   var form = new formidable.IncomingForm()
   form.uploadDir = './uploads'
   form.keepExtensions = true
@@ -86,9 +82,10 @@ router.put('/user/:id/upload', (req, res) => {
   if (!fs.existsSync(form.uploadDir)) {
     fs.mkdirSync(form.uploadDir)
   }
-
+  console.log('Uploading')
   form.parse(req, async function(err, fields, files) {
-    let filename = files.photo.path.replace('uploads\\', '')
+    let filename = files.photo.path.split(/[/|\\]/).pop()
+    console.log(filename)
     await setProfileFileName(req.params.id, filename)
     res.send({ success: true, filename })
   })
