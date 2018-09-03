@@ -1,7 +1,20 @@
 const fs = require('fs')
 const router = require('express')()
 const formidable = require('formidable')
-const { userLogin, userRegister, adminLogin, adminRegister, getUserInfo, setProfileFileName } = require('./process')
+const {
+  userLogin,
+  userRegister,
+  adminLogin,
+  adminRegister,
+  getUserInfo,
+  getAdminInfo,
+  setProfileFileName,
+  fetchStudents,
+  fetchTemplates,
+  addTemplate,
+  editTemplate,
+  getFinalPicture
+} = require('./process')
 
 router.post('/user/login', (req, res) => {
   console.log(req.body)
@@ -59,6 +72,20 @@ router.put('/admin/register', (req, res) => {
     })
 })
 
+router.get('/admin/:user/data', (req, res) => {
+  let { user } = req.params
+  console.log('Accessing data: ' + user)
+
+  getAdminInfo(user, req.token)
+    .then(data => {
+      res.send({ success: true, info: data })
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(401).send({ success: false })
+    })
+})
+
 router.get('/user/:id/data', (req, res) => {
   let { id } = req.params
   console.log('Accessing data: ' + id)
@@ -92,11 +119,80 @@ router.put('/user/:id/upload', (req, res) => {
 })
 
 router.get('/user/pictures/:filename', (req, res) => {
-  let filename = './uploads/' + req.params.filename
+  let filename = __dirname + '/uploads/' + req.params.filename
   let type = filename.split('.').pop()
   let img = fs.readFileSync(filename)
   res.writeHead(200, { 'Content-Type': 'image/' + type })
   res.end(img, 'binary')
+})
+
+router.get('/users/data', (req, res) => {
+  fetchStudents(req.token)
+    .then(data => {
+      res.send(data)
+    })
+    .catch(err => {
+      res.status(401).send(err)
+    })
+})
+
+router.get('/user/card/:studentno/:cardid', (req, res) => {
+  getFinalPicture(req.params.studentno, req.params.cardid)
+    .then(image => {
+      res.end(image, 'binary')
+    })
+    .catch(err => {
+      res.send(err)
+    })
+})
+
+router.put('/templates/:id/edit', (req, res) => {
+  console.log(req.body)
+  editTemplate(req.params.id, req.body)
+    .then(() => {
+      res.send({ success: true })
+    })
+    .catch(err => {
+      res.send({ success: false, error: err })
+    })
+})
+
+router.get('/templates/:id?/:type?', (req, res) => {
+  let { id, type } = req.params
+
+  fetchTemplates(parseInt(id) || null)
+    .then(data => {
+      if (parseInt(id) && type == 'image') {
+        let filename = __dirname + '/templates/' + data[0].Filename
+        let type = filename.split('.').pop()
+        let img = fs.readFileSync(filename)
+        res.writeHead(200, { 'Content-Type': 'image/' + type })
+        res.end(img, 'binary')
+      } else {
+        res.send(data)
+      }
+    })
+    .catch(err => {
+      res.send(err)
+    })
+})
+
+router.put('/templates/add', (req, res) => {
+  var form = new formidable.IncomingForm()
+  form.uploadDir = __dirname + '/templates'
+  form.keepExtensions = true
+
+  if (!fs.existsSync(form.uploadDir)) {
+    fs.mkdirSync(form.uploadDir)
+  }
+
+  console.log('Uploading')
+  form.parse(req, async function(err, fields, files) {
+    let filename = files.file.path.split(/[/|\\]/).pop()
+    console.log(filename)
+    await addTemplate(fields.name, filename)
+    res.send({ success: true, filename })
+  })
 })
 
 module.exports = router

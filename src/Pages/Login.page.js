@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
 import { Route, Link, Redirect, Switch } from 'react-router-dom'
 import { withRouter } from 'react-router'
-import { fetchJSON } from '../Functions'
+import { connect } from 'react-redux'
 
-import Register from './Register'
-import CustomInput from '../Components/CustomInput'
+import Register from './Register.page'
+import CustomInput from '../Components/CustomInput.component'
+
+import { login } from '../Controllers/User.controller'
 
 class Login extends Component {
   constructor(props) {
@@ -13,81 +15,59 @@ class Login extends Component {
       logging: false,
       username: null,
       password: null,
-      error: {
-        visible: false,
-        text: ''
-      }
+      error: null
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.loginPage = this.loginPage.bind(this)
-    this.init = window.init
     this.props.history.listen((location, action) => {
-      this.init()
+      window.init()
+      this.setState({ error: null })
     })
   }
 
   componentDidMount() {
-    this.init()
+    window.init()
+  }
+
+  componentWillReceiveProps(props) {
+    if (this.props.logging !== props.logging) {
+      if (props.error) {
+        this.setState({
+          error: props.error
+        })
+      } else if (props.success) {
+        sessionStorage.auth = JSON.stringify({ user: this.state.username, token: props.token })
+        window.location.href = '/'
+      }
+    }
   }
 
   async handleSubmit(e) {
     e.preventDefault()
 
     let { username, password } = this.state
-    this.setState({ logging: true })
 
-    try {
-      let data = await fetchJSON('/api/login', {
-        method: 'POST',
-        body: JSON.stringify({
-          username,
-          password
-        })
-      })
-
-      if (data.success) {
-        sessionStorage.auth = data.token
-        window.location.href = '/'
-      } else {
-        this.setState({
-          logging: false,
-          error: {
-            visible: true,
-            text: 'Invalid Username and/or Password!'
-          }
-        })
-      }
-    } catch (err) {
-      this.setState({
-        logging: false,
-        error: {
-          visible: true,
-          text: err
-        }
-      })
-    }
+    this.props.login(username, password)
   }
 
   handleChange(e) {
     let { name, value } = e.target
     this.setState({
       [name]: value,
-      error: {
-        visible: false,
-        text: ''
-      }
+      error: null
     })
   }
 
   loginPage() {
-    const { logging, username, password, error } = this.state
+    const { username, password, error } = this.state
+    const { logging } = this.props
     return (
       <form className="form card-form p-5" onSubmit={this.handleSubmit}>
-        <h3 className="text-center text-info">Login Form</h3>
-        {error.visible && (
+        <h3 className="text-center">Login Form</h3>
+        {error && (
           <div className="alert alert-danger" role="alert">
-            {error.text}
+            {error}
           </div>
         )}
         <CustomInput
@@ -95,7 +75,7 @@ class Login extends Component {
           type="text"
           name="username"
           onChange={this.handleChange}
-          isInvalid={username != null && !username}
+          isInvalid={username !== null && !username}
           errorText="Please input a username"
         />
         <CustomInput
@@ -103,7 +83,7 @@ class Login extends Component {
           type="password"
           name="password"
           onChange={this.handleChange}
-          isInvalid={password != null && !password}
+          isInvalid={password !== null && !password}
           errorText="Please input a password"
         />
         <input
@@ -125,10 +105,7 @@ class Login extends Component {
 
   render() {
     return (
-      <main
-        className="d-flex align-items-center flex-column justify-content-center h-100 bg-gradient text-black"
-        style={{ height: '100%' }}
-      >
+      <main className="d-flex align-items-center flex-column justify-content-center h-100 bg-gradient text-black background">
         <Switch>
           <Route exact path="/login" component={this.loginPage} />
           <Route path="/register" component={Register} />
@@ -139,4 +116,18 @@ class Login extends Component {
   }
 }
 
-export default withRouter(Login)
+const mapStateToProps = ({ UserReducer }) => {
+  let { login } = UserReducer
+  return login || {}
+}
+
+const mapDispatchToProps = {
+  login
+}
+
+export default withRouter(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(Login)
+)

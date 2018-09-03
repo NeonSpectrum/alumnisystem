@@ -1,6 +1,10 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import CustomInput from '../Components/CustomInput'
+import { connect } from 'react-redux'
+
+import CustomInput from '../Components/CustomInput.component'
+
+import { register } from '../Controllers/User.controller'
 
 class Register extends Component {
   constructor(props) {
@@ -11,52 +15,37 @@ class Register extends Component {
       password: null,
       vpassword: null,
       firstname: null,
-      lastname: null
+      lastname: null,
+      error: null
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
+  componentWillReceiveProps(props) {
+    if (this.props.registering !== props.registering) {
+      if (props.error) {
+        this.setState({
+          error: props.error
+        })
+      } else if (props.success) {
+        alert('Registered Successfully!')
+        props.history.push('/login')
+      }
+    }
+  }
+
   async handleSubmit(e) {
     e.preventDefault()
 
-    if (!this.isPasswordMatched()) {
-      return alert('Password not matched!')
-    }
-
     let { username, password, firstname, lastname } = this.state
 
-    this.setState({ registering: true })
-
-    try {
-      let res = await fetch('/api/register', {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        method: 'PUT',
-        body: JSON.stringify({
-          username,
-          password,
-          firstname,
-          lastname
-        })
-      })
-      let data = await res.json()
-
-      if (data.success) {
-        alert('Registered Successfully!')
-      } else {
-        alert('Registered Failed')
-      }
-    } catch (err) {
-      alert(err)
-      alert('There was an error')
-    } finally {
-      this.setState({
-        registering: false
-      })
-    }
+    this.props.register({
+      username,
+      password,
+      firstname,
+      lastname
+    })
   }
 
   handleChange(e) {
@@ -66,22 +55,23 @@ class Register extends Component {
     })
   }
 
-  isPasswordMatched() {
-    let { password, vpassword } = this.state
-    return password === vpassword
-  }
-
   render() {
-    const { registering, username, password, vpassword, firstname, lastname } = this.state
+    const { error, username, password, vpassword, firstname, lastname } = this.state
+    const { registering } = this.props
     return (
       <form className="form card-form p-5" onSubmit={this.handleSubmit}>
         <h3 className="text-center text-info">Registration Form</h3>
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
         <CustomInput
           label="Username"
           type="text"
           name="username"
           onChange={this.handleChange}
-          isInvalid={username != null && !username}
+          isInvalid={username !== null && !username}
           errorText="Please input a username"
         />
         <CustomInput
@@ -89,15 +79,15 @@ class Register extends Component {
           type="text"
           name="firstname"
           onChange={this.handleChange}
-          isInvalid={firstname != null && !firstname}
+          isInvalid={firstname !== null && !firstname}
           errorText="Please input a first name"
         />
         <CustomInput
-          label="Username"
+          label="Last Name"
           type="text"
           name="lastname"
           onChange={this.handleChange}
-          isInvalid={lastname != null && !lastname}
+          isInvalid={lastname !== null && !lastname}
           errorText="Please input a last name"
         />
         <CustomInput
@@ -105,7 +95,7 @@ class Register extends Component {
           type="password"
           name="password"
           onChange={this.handleChange}
-          isInvalid={password != null && !password}
+          isInvalid={password !== null && !password}
           errorText="Please input a password"
         />
         <CustomInput
@@ -113,10 +103,10 @@ class Register extends Component {
           type="password"
           name="vpassword"
           onChange={this.handleChange}
-          isInvalid={vpassword != null && !vpassword}
+          isInvalid={vpassword !== null && !vpassword}
           errorText="Please input a verify password"
           extra={
-            vpassword != null && password !== vpassword ? (
+            vpassword !== null && password !== vpassword ? (
               <span className="error text-danger">Password is not match.</span>
             ) : (
               ''
@@ -127,7 +117,9 @@ class Register extends Component {
           type="submit"
           className="btn btn-info btn-raised float-right"
           value={registering ? 'Registering...' : 'Register'}
-          disabled={registering || !username || !password || !vpassword || !firstname || !lastname}
+          disabled={
+            registering || !username || !password || !vpassword || !firstname || !lastname || password !== vpassword
+          }
         />
         <Link
           className="float-right"
@@ -140,5 +132,16 @@ class Register extends Component {
     )
   }
 }
+const mapStateToProps = ({ UserReducer }) => {
+  let { register } = UserReducer
+  return register || {}
+}
 
-export default Register
+const mapDispatchToProps = {
+  register
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Register)

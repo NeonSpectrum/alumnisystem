@@ -1,15 +1,26 @@
 import React, { Component } from 'react'
-import { Route, Link, NavLink, Redirect, Switch } from 'react-router-dom'
-import Home from '../Pages/Home'
-import Students from '../Pages/Students'
-import { logout, getSessionData } from '../Functions'
+import { Route, Link, NavLink, Redirect, Switch, withRouter } from 'react-router-dom'
+import { connect } from 'react-redux'
+
+import Home from '../Pages/Home.page'
+import Students from '../Pages/Students.page'
+import IDGenerator from '../Pages/IDGenerator.page'
+import IDGeneratorEdit from '../Pages/IDGenerator.edit.page'
+import Logout from '../Pages/Logout.page'
+
+import { getInfo } from '../Controllers/User.controller'
 
 class Navbar extends Component {
+  componentWillMount() {
+    this.props.getInfo()
+  }
+
   render() {
-    let { firstname, lastname } = getSessionData()
+    let { data = {} } = this.props
+    let { FirstName, LastName } = data
     return (
-      <div>
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div className="navbar-container">
+        <nav className="navbar navbar-expand-lg navbar-dark fixed-top" style={{ backgroundColor: 'rgb(152,62,149)' }}>
           <Link className="navbar-brand" to="/">
             Alumni System
           </Link>
@@ -37,11 +48,16 @@ class Navbar extends Component {
                   Students
                 </NavLink>
               </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/id-generator" activeClassName="active">
+                  ID Generator
+                </NavLink>
+              </li>
             </ul>
             <ul className="navbar-nav ml-auto mt-2 mt-lg-0">
-              <li class="nav-item dropdown">
+              <li className="nav-item dropdown">
                 <a
-                  class="nav-link dropdown-toggle"
+                  className="nav-link dropdown-toggle"
                   style={{ cursor: 'pointer' }}
                   id="navbarDropdown"
                   role="button"
@@ -49,10 +65,10 @@ class Navbar extends Component {
                   aria-haspopup="true"
                   aria-expanded="false"
                 >
-                  Welcome, {firstname} {lastname}
+                  Welcome, {FirstName} {LastName}
                 </a>
                 <div
-                  class="dropdown-menu dropdown-menu-right"
+                  className="dropdown-menu dropdown-menu-right"
                   aria-labelledby="navbarDropdown"
                   style={{ left: 'auto', right: 0 }}
                 >
@@ -61,8 +77,7 @@ class Navbar extends Component {
                     className="dropdown-item"
                     onClick={() => {
                       if (window.confirm('Are you sure do you want to logout?')) {
-                        logout()
-                        window.location.href = '/'
+                        window.location.href = '/logout'
                       }
                     }}
                   >
@@ -77,6 +92,9 @@ class Navbar extends Component {
           <Switch>
             <Route exact path="/" component={Home} />
             <Route path="/students" component={Students} />
+            <Route path="/id-generator/:id/edit" component={IDGeneratorEdit} />
+            <Route path="/id-generator" component={IDGenerator} />
+            <Route path="/logout" component={Logout} />
             <Redirect to="/" />
           </Switch>
         </main>
@@ -84,5 +102,18 @@ class Navbar extends Component {
     )
   }
 }
+const mapStateToProps = ({ UserReducer }) => {
+  let { info } = UserReducer
+  return info || {}
+}
 
-export default Navbar
+const mapDispatchToProps = {
+  getInfo
+}
+
+export default withRouter(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(Navbar)
+)

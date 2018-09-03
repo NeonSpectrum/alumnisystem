@@ -1,9 +1,10 @@
 import crypto from 'crypto'
 
-const ENCRYPTION_KEY = 'W8pbSj8UVwVU0nuvLhcquia4jR3ViHMz' // Must be 256 bytes (32 characters)
-const IV_LENGTH = 16 // For AES, this is always 16
+export const API_URL = 'http://localhost:3000/api'
+export const ENCRYPTION_KEY = 'W8pbSj8UVwVU0nuvLhcquia4jR3ViHMz'
+export const IV_LENGTH = 16
 
-const encrypt = text => {
+export const encrypt = text => {
   let iv = crypto.randomBytes(IV_LENGTH)
   let cipher = crypto.createCipheriv('aes-256-cbc', new Buffer(ENCRYPTION_KEY), iv)
   let encrypted = cipher.update(text)
@@ -13,7 +14,7 @@ const encrypt = text => {
   return iv.toString('hex') + ':' + encrypted.toString('hex')
 }
 
-const decrypt = text => {
+export const decrypt = text => {
   let textParts = text.split(':')
   let iv = new Buffer(textParts.shift(), 'hex')
   let encryptedText = new Buffer(textParts.join(':'), 'hex')
@@ -25,11 +26,11 @@ const decrypt = text => {
   return decrypted.toString()
 }
 
-const fetchHTML = (url, headers) => {
+export const fetchHTML = (url, headers) => {
   return new Promise(async (resolve, reject) => {
     try {
       resolve(
-        await (await fetch(url, {
+        await (await fetch(API_URL + url, {
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json'
@@ -43,11 +44,12 @@ const fetchHTML = (url, headers) => {
   })
 }
 
-const fetchJSON = (url, headers) => {
+export const fetchJSON = (url, headers) => {
   return new Promise(async (resolve, reject) => {
     try {
       resolve(
-        await (await fetch(url, {
+        await (await fetch(API_URL + url, {
+          method: 'GET',
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json'
@@ -61,20 +63,18 @@ const fetchJSON = (url, headers) => {
   })
 }
 
-const validateAuth = async item => {
-  let data = await fetchJSON('/api/login', {
+export const validateAuth = async item => {
+  let data = await fetchJSON('/admin/login', {
     method: 'POST',
-    body: decrypt(item)
+    body: decrypt(item.token)
   })
   return data.success
 }
 
-const getSessionData = () => {
+export const getSessionData = () => {
   return JSON.parse(decrypt(sessionStorage.auth))
 }
 
-const logout = () => {
+export const logout = () => {
   sessionStorage.removeItem('auth')
 }
-
-export { fetchJSON, fetchHTML, validateAuth, encrypt, decrypt, logout, getSessionData }
