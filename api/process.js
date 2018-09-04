@@ -1,13 +1,7 @@
 const moment = require('moment')
 const { encrypt, decrypt } = require('./crypt')
 const Jimp = require('jimp')
-const Database = require('./db')
-const db = new Database({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'alumnisystem'
-})
+const db = require('./db')
 
 module.exports = {
   userLogin: (id, code) => {
@@ -157,6 +151,30 @@ module.exports = {
       } else {
         reject()
       }
+    })
+  },
+  getSamplePicture: cardid => {
+    return new Promise(async (resolve, reject) => {
+      let template = await db.query('SELECT * FROM id_template WHERE ID=?', [cardid])
+
+      let { Filename, PictureX, PictureY, DetailsX, DetailsY } = template[0]
+
+      let profile = await Jimp.read(__dirname + '/uploads/default.jpg')
+      profile.resize(300, 300)
+
+      let details = [`Student Number: [SAMPLE TEXT]`, `Name: [SAMPLE TEXT]`, `Course: [SAMPLE TEXT]`]
+
+      Jimp.read(__dirname + '/templates/' + Filename, async (err, image) => {
+        if (err) reject(err)
+        if (PictureX != 0 && PictureY != 0 && DetailsX != 0 && DetailsY != 0) {
+          let font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK)
+          for (var i = 0, j = 0; i < details.length; i++, j += 50) {
+            image.print(font, DetailsX, DetailsY + j, details[i], 600)
+          }
+          image.composite(profile, PictureX, PictureY)
+        }
+        resolve(await image.getBufferAsync(Jimp.MIME_PNG))
+      })
     })
   },
   getFinalPicture: (studentno, cardid) => {

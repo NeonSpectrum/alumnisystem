@@ -35,12 +35,20 @@ class IDGenerator extends Component {
           </nav>
           <main className="col-md-10 pt-3 pb-3" style={{ overflow: 'auto' }}>
             <Switch>
-              <Redirect from={match.url} to={`${match.url}/${data[0].ID}`} exact />
+              {data.length > 0 && <Redirect from={match.url} to={`${match.url}/${data[0].ID}`} exact />}
               <Route path={`${match.url}/:id`} component={ImagePage} />
             </Switch>
           </main>
         </div>
         <AddTemplate />
+        <button
+          className="btn btn-icon"
+          style={{ position: 'absolute', bottom: 5, right: 5 }}
+          data-toggle="modal"
+          data-target="#addTemplateModal"
+        >
+          <FontAwesomeIcon icon="plus" size="lg" />
+        </button>
       </div>
     )
   }
@@ -49,20 +57,11 @@ class IDGenerator extends Component {
 const ImagePage = ({ match, history }) => {
   return (
     <div className="h-100">
-      <ImageLoader src={API_URL + '/templates/' + match.params.id + '/image'}>
+      <ImageLoader src={API_URL + '/templates/' + match.params.id + '/sample'}>
         <img alt={match.params.id + ' picture'} />
         <div>Can't fetch the image</div>
         <Loading style={{ backgroundPosition: '40% 40%' }} />
       </ImageLoader>
-
-      <button
-        className="btn btn-icon"
-        style={{ position: 'absolute', bottom: 5, right: 5 }}
-        data-toggle="modal"
-        data-target="#addTemplateModal"
-      >
-        <FontAwesomeIcon icon="plus" size="lg" />
-      </button>
       <button
         className="btn btn-icon"
         style={{ position: 'absolute', bottom: 5, right: 60 }}

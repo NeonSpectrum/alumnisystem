@@ -13,7 +13,8 @@ const {
   fetchTemplates,
   addTemplate,
   editTemplate,
-  getFinalPicture
+  getFinalPicture,
+  getSamplePicture
 } = require('./process')
 
 router.post('/user/login', (req, res) => {
@@ -154,6 +155,16 @@ router.put('/templates/:id/edit', (req, res) => {
     })
     .catch(err => {
       res.send({ success: false, error: err })
+    })
+})
+
+router.get('/templates/:id/sample', (req, res) => {
+  getSamplePicture(req.params.id)
+    .then(image => {
+      res.end(image, 'binary')
+    })
+    .catch(err => {
+      res.send(err)
     })
 })
 
