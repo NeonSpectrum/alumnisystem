@@ -1,4 +1,4 @@
-import { ADD_TEMPLATE, SAVE_TEMPLATE } from '../Reducers/Template.reducer'
+import { ADD_TEMPLATE, SAVE_TEMPLATE, DELETE_TEMPLATE } from '../Reducers/Template.reducer'
 
 export function addTemplate(name, file) {
   let formData = new FormData()
@@ -13,6 +13,18 @@ export function addTemplate(name, file) {
         url: '/templates/add',
         method: 'PUT',
         data: formData
+      }
+    }
+  }
+}
+
+export function deleteTemplate(id) {
+  return {
+    type: DELETE_TEMPLATE,
+    payload: {
+      request: {
+        url: '/templates/' + id + '/delete',
+        method: 'DELETE'
       }
     }
   }

@@ -1,4 +1,5 @@
 const fs = require('fs')
+const debug = require('debug')('console:http\t\t')
 const router = require('express')()
 const formidable = require('formidable')
 const {
@@ -13,12 +14,17 @@ const {
   fetchTemplates,
   addTemplate,
   editTemplate,
+  deleteTemplate,
   getFinalPicture,
   getSamplePicture
 } = require('./process')
 
+router.use((req, res, next) => {
+  debug(req.method + ' ' + req.url + ' ' + JSON.stringify(req.body))
+  next()
+})
+
 router.post('/user/login', (req, res) => {
-  console.log(req.body)
   let { id, code } = req.body
 
   userLogin(id, code)
@@ -31,8 +37,6 @@ router.post('/user/login', (req, res) => {
 })
 
 router.put('/user/register', (req, res) => {
-  console.log(req.body)
-
   userRegister(req.body)
     .then(() => {
       res.send({ success: true })
@@ -43,7 +47,6 @@ router.put('/user/register', (req, res) => {
 })
 
 router.post('/admin/login', (req, res) => {
-  console.log(req.body)
   let { username, password } = req.body
 
   adminLogin(username, password)
@@ -56,7 +59,6 @@ router.post('/admin/login', (req, res) => {
 })
 
 router.put('/admin/register', (req, res) => {
-  console.log(req.body)
   let { username, password, firstname, lastname } = req.body
 
   adminRegister({
@@ -75,45 +77,39 @@ router.put('/admin/register', (req, res) => {
 
 router.get('/admin/:user/data', (req, res) => {
   let { user } = req.params
-  console.log('Accessing data: ' + user)
 
   getAdminInfo(user, req.token)
     .then(data => {
       res.send({ success: true, info: data })
     })
     .catch(err => {
-      console.log(err)
       res.status(401).send({ success: false })
     })
 })
 
 router.get('/user/:id/data', (req, res) => {
   let { id } = req.params
-  console.log('Accessing data: ' + id)
 
   getUserInfo(id, req.token)
     .then(data => {
       res.send({ success: true, info: data })
     })
     .catch(err => {
-      console.log(err)
       res.status(401).send({ success: false })
     })
 })
 
 router.put('/user/:id/upload', (req, res) => {
-  console.log(req.params.id)
   var form = new formidable.IncomingForm()
-  form.uploadDir = './uploads'
+  form.uploadDir = __dirname + '/uploads'
   form.keepExtensions = true
 
   if (!fs.existsSync(form.uploadDir)) {
     fs.mkdirSync(form.uploadDir)
   }
-  console.log('Uploading')
   form.parse(req, async function(err, fields, files) {
+    console.log('parsed')
     let filename = files.photo.path.split(/[/|\\]/).pop()
-    console.log(filename)
     await setProfileFileName(req.params.id, filename)
     res.send({ success: true, filename })
   })
@@ -148,8 +144,17 @@ router.get('/user/card/:studentno/:cardid', (req, res) => {
 })
 
 router.put('/templates/:id/edit', (req, res) => {
-  console.log(req.body)
   editTemplate(req.params.id, req.body)
+    .then(() => {
+      res.send({ success: true })
+    })
+    .catch(err => {
+      res.send({ success: false, error: err })
+    })
+})
+
+router.delete('/templates/:id/delete', (req, res) => {
+  deleteTemplate(req.params.id)
     .then(() => {
       res.send({ success: true })
     })
@@ -197,10 +202,8 @@ router.put('/templates/add', (req, res) => {
     fs.mkdirSync(form.uploadDir)
   }
 
-  console.log('Uploading')
   form.parse(req, async function(err, fields, files) {
     let filename = files.file.path.split(/[/|\\]/).pop()
-    console.log(filename)
     await addTemplate(fields.name, filename)
     res.send({ success: true, filename })
   })

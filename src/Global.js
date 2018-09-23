@@ -1,6 +1,8 @@
 import crypto from 'crypto'
+import axios from 'axios'
 
 export const API_URL = 'http://localhost:3000/api'
+export const SOCKET_URL = 'http://localhost:3000'
 export const ENCRYPTION_KEY = 'W8pbSj8UVwVU0nuvLhcquia4jR3ViHMz'
 export const IV_LENGTH = 16
 
@@ -26,49 +28,14 @@ export const decrypt = text => {
   return decrypted.toString()
 }
 
-export const fetchHTML = (url, headers) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      resolve(
-        await (await fetch(API_URL + url, {
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-          ...headers
-        })).text()
-      )
-    } catch (err) {
-      reject(err)
-    }
-  })
-}
-
-export const fetchJSON = (url, headers) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      resolve(
-        await (await fetch(API_URL + url, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-          ...headers
-        })).json()
-      )
-    } catch (err) {
-      reject(err)
-    }
-  })
-}
-
 export const validateAuth = async item => {
-  let data = await fetchJSON('/admin/login', {
-    method: 'POST',
-    body: decrypt(item.token)
-  })
-  return data.success
+  try {
+    let data = await axios.post(API_URL + '/admin/login', JSON.parse(decrypt(item.token)))
+    return data.success
+  } catch (err) {
+    console.log(err)
+    return false
+  }
 }
 
 export const getSessionData = () => {

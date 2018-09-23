@@ -143,9 +143,19 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       let { picture, details } = info
       let { affectedRows } = await db.query(
-        'UPDATE id_template SET PictureX=?, PictureY=?, DetailsX=?, DetailsY=? WHERE ID=?',
-        [picture.x, picture.y, details.x, details.y, id]
+        'UPDATE id_template SET PictureX=?, PictureY=?, PictureHeight=?, PictureWidth=?, DetailsX=?, DetailsY=?, DetailsHeight=?, DetailsWidth=?, TimeStamp=NOW() WHERE ID=?',
+        [picture.x, picture.y, picture.height, picture.width, details.x, details.y, details.height, details.width, id]
       )
+      if (affectedRows > 0) {
+        resolve()
+      } else {
+        reject()
+      }
+    })
+  },
+  deleteTemplate: id => {
+    return new Promise(async (resolve, reject) => {
+      let { affectedRows } = await db.query('DELETE FROM id_template WHERE id=?', [id])
       if (affectedRows > 0) {
         resolve()
       } else {
@@ -157,10 +167,20 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       let template = await db.query('SELECT * FROM id_template WHERE ID=?', [cardid])
 
-      let { Filename, PictureX, PictureY, DetailsX, DetailsY } = template[0]
+      let {
+        Filename,
+        PictureX,
+        PictureY,
+        PictureHeight,
+        PictureWidth,
+        DetailsX,
+        DetailsY,
+        DetailsHeight,
+        DetailsWidth
+      } = template[0]
 
-      let profile = await Jimp.read(__dirname + '/uploads/default.jpg')
-      profile.resize(300, 300)
+      let profile = await Jimp.read(__dirname + '/templates/clive.png')
+      profile.resize(PictureHeight || 300, PictureWidth || 300)
 
       let details = [`Student Number: [SAMPLE TEXT]`, `Name: [SAMPLE TEXT]`, `Course: [SAMPLE TEXT]`]
 
@@ -169,7 +189,7 @@ module.exports = {
         if (PictureX != 0 && PictureY != 0 && DetailsX != 0 && DetailsY != 0) {
           let font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK)
           for (var i = 0, j = 0; i < details.length; i++, j += 50) {
-            image.print(font, DetailsX, DetailsY + j, details[i], 600)
+            image.print(font, DetailsX, DetailsY + j, details[i], DetailsWidth)
           }
           image.composite(profile, PictureX, PictureY)
         }

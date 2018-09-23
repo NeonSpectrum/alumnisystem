@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Stage, Layer, Image, Rect } from 'react-konva'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Stage, Layer, Image, Rect, Transformer } from 'react-konva'
 
 import { API_URL } from '../Global'
 import Loading from '../Components/Loading.component'
@@ -9,16 +8,91 @@ import Loading from '../Components/Loading.component'
 import { fetchTemplates } from '../Controllers/Data.controller'
 import { saveTemplate } from '../Controllers/Template.controller'
 
+class Rectangle extends React.Component {
+  constructor(props) {
+    super(props)
+    this.handleChange = this.handleChange.bind(this)
+  }
+
+  handleChange(e) {
+    const shape = e.target
+    this.props.onTransform({
+      x: shape.x(),
+      y: shape.y(),
+      width: shape.width() * shape.scaleX(),
+      height: shape.height() * shape.scaleY()
+    })
+  }
+
+  render() {
+    return (
+      <Rect
+        x={this.props.x}
+        y={this.props.y}
+        width={this.props.width}
+        height={this.props.height}
+        scaleX={1}
+        scaleY={1}
+        fill={this.props.fill}
+        name={this.props.name}
+        stroke={this.props.stroke}
+        onDragEnd={this.handleChange}
+        onTransformEnd={this.handleChange}
+        draggable
+      />
+    )
+  }
+}
+
+class TransformerComponent extends React.Component {
+  componentDidMount() {
+    this.checkNode()
+  }
+
+  componentDidUpdate() {
+    this.checkNode()
+  }
+
+  checkNode() {
+    const stage = this.transformer.getStage()
+    const { selectedShapeName } = this.props
+
+    const selectedNode = stage.findOne('.' + selectedShapeName)
+    if (selectedNode === this.transformer.node()) {
+      return
+    }
+
+    if (selectedNode) {
+      this.transformer.attachTo(selectedNode)
+    } else {
+      this.transformer.detach()
+    }
+    this.transformer.getLayer().batchDraw()
+  }
+
+  render() {
+    return (
+      <Transformer
+        ref={node => {
+          this.transformer = node
+        }}
+      />
+    )
+  }
+}
+
 class IDGeneratorEdit extends Component {
   constructor(props) {
     super(props)
     this.state = {
       image: null,
       picture: null,
-      details: null
+      details: null,
+      selectedShapeName: null
     }
-    this.handleDragEnd = this.handleDragEnd.bind(this)
     this.handleSave = this.handleSave.bind(this)
+    this.handleRectChange = this.handleRectChange.bind(this)
+    this.handleStageMouseDown = this.handleStageMouseDown.bind(this)
   }
 
   componentWillMount() {
@@ -46,18 +120,33 @@ class IDGeneratorEdit extends Component {
       if (props.error) {
         alert(props.error)
       } else if (props.success) {
+        this.props.fetchTemplates()
         props.history.push('/id-generator/' + this.props.match.params.id)
       }
     } else if (props.data) {
-      let { PictureX, PictureY, DetailsX, DetailsY } = props.data[0]
+      let {
+        PictureX,
+        PictureY,
+        PictureHeight,
+        PictureWidth,
+        DetailsX,
+        DetailsY,
+        DetailsHeight,
+        DetailsWidth
+      } = props.data[0]
+
       this.setState({
         picture: {
           x: PictureX,
-          y: PictureY
+          y: PictureY,
+          height: PictureHeight,
+          width: PictureWidth
         },
         details: {
           x: DetailsX,
-          y: DetailsY
+          y: DetailsY,
+          height: DetailsHeight,
+          width: DetailsWidth
         }
       })
     }
@@ -74,52 +163,94 @@ class IDGeneratorEdit extends Component {
     }
   }
 
-  handleDragEnd(e) {
+  handleStageMouseDown(e) {
+    // clicked on stage - cler selection
+    if (e.target === e.target.getStage()) {
+      this.setState({
+        selectedShapeName: ''
+      })
+      return
+    }
+    // clicked on transformer - do nothing
+    const clickedOnTransformer = e.target.getParent().className === 'Transformer'
+    if (clickedOnTransformer) {
+      return
+    }
+
+    // find clicked rect by its name
     const name = e.target.name()
+    const rect = this.state[name]
+    if (rect) {
+      this.setState({
+        selectedShapeName: name
+      })
+    } else {
+      this.setState({
+        selectedShapeName: ''
+      })
+    }
+  }
+
+  handleRectChange(name, newProps) {
     this.setState({
       [name]: {
-        x: e.target.x(),
-        y: e.target.y()
+        ...this.state[name],
+        ...newProps
       }
     })
   }
 
   render() {
-    const { image, height, width, picture, details } = this.state
+    const { image, height, width, picture, details, selectedShapeName } = this.state
     const { loading = true, data } = this.props
     return loading || !image ? (
       <Loading />
     ) : (
       <div>
         <div className="container my-5 card py-3" style={{ width: width + 30 }}>
-          <Stage width={width} height={height}>
+          <Stage width={width} height={height} onMouseDown={this.handleStageMouseDown}>
             <Layer>
               <Image image={image} />
-              <Rect
+              <Rectangle
                 name="picture"
                 x={picture.x}
                 y={picture.y}
-                width={300}
-                height={300}
+                height={picture.height || 300}
+                width={picture.width || 300}
                 draggable={true}
                 stroke="black"
-                onDragEnd={this.handleDragEnd}
+                text="hi"
+                onTransform={newProps => {
+                  this.handleRectChange('picture', newProps)
+                }}
               />
-              <Rect
+              <Rectangle
                 name="details"
                 x={details.x}
                 y={details.y}
-                width={600}
-                height={300}
+                height={details.height || 300}
+                width={details.width || 600}
                 draggable={true}
                 stroke="black"
-                onDragEnd={this.handleDragEnd}
+                onTransform={newProps => {
+                  this.handleRectChange('details', newProps)
+                }}
               />
+              <TransformerComponent selectedShapeName={selectedShapeName} />
             </Layer>
           </Stage>
         </div>
+        <button
+          className="btn btn-icon"
+          style={{ position: 'fixed', bottom: 10, left: 10 }}
+          onClick={() => {
+            this.props.history.goBack()
+          }}
+        >
+          <i className="fa fa-angle-left fa-2x" />
+        </button>
         <button className="btn btn-icon" style={{ position: 'fixed', bottom: 10, right: 10 }} onClick={this.handleSave}>
-          <FontAwesomeIcon icon="edit" size="lg" />
+          <i className="fa fa-edit fa-lg" />
         </button>
       </div>
     )

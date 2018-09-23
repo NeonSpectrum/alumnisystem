@@ -34,7 +34,6 @@ export function logout() {
 
 export function getInfo() {
   let { user, token } = JSON.parse(sessionStorage.auth)
-  console.log(user + ' ' + token)
   return {
     type: GET_INFO,
     payload: {
