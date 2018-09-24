@@ -1,4 +1,5 @@
 const fs = require('fs')
+const gm = require('gm')
 const debug = require('debug')('console:http\t\t')
 const router = require('express')()
 const formidable = require('formidable')
@@ -10,6 +11,7 @@ const {
   getUserInfo,
   getAdminInfo,
   setProfileFileName,
+  setSignatureFileName,
   fetchStudents,
   fetchTemplates,
   addTemplate,
@@ -99,7 +101,7 @@ router.get('/user/:id/data', (req, res) => {
     })
 })
 
-router.put('/user/:id/upload', (req, res) => {
+router.put('/user/:id/upload/:type', (req, res) => {
   var form = new formidable.IncomingForm()
   form.uploadDir = __dirname + '/uploads'
   form.keepExtensions = true
@@ -108,9 +110,18 @@ router.put('/user/:id/upload', (req, res) => {
     fs.mkdirSync(form.uploadDir)
   }
   form.parse(req, async function(err, fields, files) {
-    console.log('parsed')
     let filename = files.photo.path.split(/[/|\\]/).pop()
-    await setProfileFileName(req.params.id, filename)
+    if (req.params.type == 'signature') {
+      console.log(files.photo.path)
+      gm(files.photo.path)
+        .transparent('white')
+        .write(files.photo.path, async function(err) {
+          if (err) console.log(err)
+          await setSignatureFileName(req.params.id, filename)
+        })
+    } else {
+      await setProfileFileName(req.params.id, filename)
+    }
     res.send({ success: true, filename })
   })
 })

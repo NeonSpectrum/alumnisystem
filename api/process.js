@@ -96,6 +96,16 @@ module.exports = {
       }
     })
   },
+  setSignatureFileName: (id, filename) => {
+    return new Promise(async (resolve, reject) => {
+      let { affectedRows } = await db.query('UPDATE student SET SignatureFileName=? WHERE ID=?', [filename, id])
+      if (affectedRows > 0) {
+        resolve()
+      } else {
+        reject()
+      }
+    })
+  },
   fetchStudents: token => {
     return new Promise(async (resolve, reject) => {
       try {
