@@ -110,7 +110,7 @@ class Login extends Component {
         <Switch>
           <Route exact path="/login" component={this.loginPage} />
           <Route path="/register" component={Register} />
-          <Redirect to="/login" />
+          <Redirect path="*" to="/" />
         </Switch>
       </main>
     )

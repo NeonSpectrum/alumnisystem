@@ -102,7 +102,7 @@ class Navbar extends Component {
             <Route path="/id-generator/:id/edit" component={IDGeneratorEdit} />
             <Route path="/id-generator" component={IDGenerator} />
             <Route path="/logout" component={Logout} />
-            <Redirect to="/" />
+            <Redirect path="*" to="/" />
           </Switch>
         </main>
       </div>
