@@ -1,5 +1,6 @@
 require('dotenv').config({ path: process.cwd() + '/development.env' })
 
+const fs = require('fs')
 const cors = require('cors')
 const debug = require('debug')('console:system\t')
 
