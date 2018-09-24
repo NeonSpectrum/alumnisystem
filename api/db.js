@@ -1,3 +1,5 @@
+require('dotenv').config({ path: process.cwd() + '/development.env' })
+
 const mysql = require('mysql')
 const debug = require('debug')('console:database\t')
 
@@ -24,8 +26,8 @@ class Database {
 
 const db = new Database({
   host: 'localhost',
-  user: 'root',
-  password: '',
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
   database: 'alumnisystem'
 })
 
