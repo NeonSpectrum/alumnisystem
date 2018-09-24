@@ -16,6 +16,12 @@ class Navbar extends Component {
     this.props.getInfo()
   }
 
+  componentWillReceiveProps(props) {
+    if (props.error) {
+      window.alert(props.error)
+    }
+  }
+
   render() {
     let { data = {} } = this.props
     let { FirstName, LastName } = data

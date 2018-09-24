@@ -90,7 +90,7 @@ class IDGenerator extends Component {
 }
 
 const ImagePage = props => {
-  let { match, history, fetchTemplates, deleteTemplate, data, onDelete } = props
+  let { match, history, deleteTemplate, data, onDelete } = props
   let idExists = false
 
   let datum = []

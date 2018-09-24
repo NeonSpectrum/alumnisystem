@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 
 import { logout } from '../Controllers/User.controller'
-import { PUBLIC_URL } from '../Global'
 
 class Logout extends Component {
   constructor(props) {

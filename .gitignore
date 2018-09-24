@@ -22,3 +22,7 @@ yarn-error.log*
 
 /api/uploads/*
 /api/templates/*
+
+# env
+development.env
+production.env
