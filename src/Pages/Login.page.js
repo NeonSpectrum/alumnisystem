@@ -7,6 +7,7 @@ import Register from './Register.page'
 import CustomInput from '../Components/CustomInput.component'
 
 import { login } from '../Controllers/User.controller'
+import { PUBLIC_URL } from '../Global'
 
 class Login extends Component {
   constructor(props) {
@@ -38,7 +39,7 @@ class Login extends Component {
         })
       } else if (props.success) {
         sessionStorage.auth = JSON.stringify({ user: this.state.username, token: props.token })
-        window.location.href = '/'
+        window.location.href = PUBLIC_URL + '/'
       }
     }
   }

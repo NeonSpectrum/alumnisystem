@@ -9,7 +9,9 @@ import { validateAuth } from './Global'
 class App extends Component {
   render() {
     return (
-      <Router>{sessionStorage.auth && validateAuth(JSON.parse(sessionStorage.auth)) ? <Navbar /> : <Login />}</Router>
+      <Router basename="/alumnisystem/">
+        {sessionStorage.auth && validateAuth(JSON.parse(sessionStorage.auth)) ? <Navbar /> : <Login />}
+      </Router>
     )
   }
 }

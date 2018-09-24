@@ -9,6 +9,7 @@ import IDGeneratorEdit from '../Pages/IDGenerator.edit.page'
 import Logout from '../Pages/Logout.page'
 
 import { getInfo } from '../Controllers/User.controller'
+import { PUBLIC_URL } from '../Global'
 
 class Navbar extends Component {
   componentWillMount() {
@@ -77,7 +78,7 @@ class Navbar extends Component {
                     className="dropdown-item"
                     onClick={() => {
                       if (window.confirm('Are you sure do you want to logout?')) {
-                        window.location.href = '/logout'
+                        window.location.href = PUBLIC_URL + '/logout'
                       }
                     }}
                   >

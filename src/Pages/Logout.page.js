@@ -1,16 +1,26 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { Redirect } from 'react-router-dom'
 
 import { logout } from '../Controllers/User.controller'
+import { PUBLIC_URL } from '../Global'
 
 class Logout extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      logging: true
+    }
+  }
   componentDidMount() {
     this.props.logout()
-    window.location.href = '/login'
+    this.setState({
+      logging: false
+    })
   }
 
   render() {
-    return <div>Logging out...</div>
+    return this.state.logging ? <div>Logging out...</div> : <Redirect to="/login" />
   }
 }
 

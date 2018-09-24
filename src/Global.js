@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import axios from 'axios'
 
+export const PUBLIC_URL = process.env.PUBLIC_URL
 export const API_URL = 'http://localhost:3000/api'
 export const SOCKET_URL = 'http://localhost:3000'
 export const ENCRYPTION_KEY = 'W8pbSj8UVwVU0nuvLhcquia4jR3ViHMz'

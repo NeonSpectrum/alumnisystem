@@ -1,8 +1,8 @@
 {
-  "name": "alumnisystem",
-  "version": "0.1.0",
+  "name": "Alumni System",
+  "version": "0.2.0",
   "private": true,
-  "homepage": "localhost/alumnisystem",
+  "homepage": "https://neonspectrum.xyz/alumnisystem",
   "dependencies": {
     "axios": "^0.18.0",
     "cors": "^2.8.4",
