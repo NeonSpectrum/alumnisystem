@@ -3,8 +3,6 @@ require('dotenv').config({ path: process.cwd() + '/development.env' })
 const cors = require('cors')
 const debug = require('debug')('console:system\t')
 
-module.exports = debug
-
 debug('Booting Alumni System API')
 
 const express = require('express')
@@ -13,7 +11,7 @@ const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const bearerToken = require('express-bearer-token')
 const router = require('./router')
-const port = Number.isInteger(+process.argv[2]) ? +process.argv[2] : process.env.NODE_PORT
+const port = Number.isInteger(+process.argv[2]) ? +process.argv[2] : +process.env.NODE_PORT
 
 app.use(cors())
 app.use(express.json())
