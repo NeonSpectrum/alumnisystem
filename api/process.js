@@ -179,7 +179,7 @@ module.exports = {
         DetailsWidth
       } = template[0]
 
-      let profile = await Jimp.read(__dirname + '/templates/' + Filename)
+      let profile = await Jimp.read(__dirname + '/uploads/default.jpg')
       profile.resize(PictureHeight || 300, PictureWidth || 300)
 
       let details = [`Student Number: [SAMPLE TEXT]`, `Name: [SAMPLE TEXT]`, `Course: [SAMPLE TEXT]`]
