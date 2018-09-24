@@ -7,7 +7,16 @@ debug('Booting Alumni System API')
 
 const express = require('express')
 const app = express()
-const http = require('http').createServer(app)
+const http = process.env.HTTPS
+  ? require('https').createServer(
+      {
+        ca: fs.readFileSync('/var/www/key/ca_bundle.crt'),
+        key: fs.readFileSync('/var/www/key/private.key'),
+        cert: fs.readFileSync('/var/www/key/certificate.crt')
+      },
+      app
+    )
+  : require('http').createServer(app)
 const io = require('socket.io')(http)
 const bearerToken = require('express-bearer-token')
 const router = require('./router')
