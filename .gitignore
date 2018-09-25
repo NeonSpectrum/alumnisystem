@@ -23,6 +23,9 @@ yarn-error.log*
 /api/uploads/*
 /api/templates/*
 
+!/api/uploads/default.jpg
+!/api/uploads/signature.png
+
 # env
 development.env
 production.env
