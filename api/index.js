@@ -26,7 +26,7 @@ const port = Number.isInteger(+process.argv[2]) ? +process.argv[2] : +process.en
 app.use(cors())
 app.use(express.json())
 app.use(bearerToken())
-app.use('/api', router)
+app.use('/', router)
 
 io.on('connection', socket => {
   socket.on('refreshData', data => {
