@@ -217,7 +217,7 @@ module.exports = {
       ])
 
       let { Filename, Picture, Info, Signature } = template[0]
-      let { FirstName, LastName, Course, ProfileFileName } = student[0]
+      let { FirstName, LastName, Course, ProfileFileName, SignatureFileName } = student[0]
 
       Picture = Picture.split(',').map(Number)
       Info = Info.split(',').map(Number)
@@ -238,7 +238,7 @@ module.exports = {
           image.print(font, Info[0], Info[1] + j, details[i], 600)
         }
         image.composite(profile, Picture[0], Picture[1])
-        image.composite(profile, Signature[0], Signature[1])
+        image.composite(signature, Signature[0], Signature[1])
         resolve(await image.getBufferAsync(Jimp.MIME_JPEG))
       })
     })
