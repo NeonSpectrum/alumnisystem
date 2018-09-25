@@ -149,12 +149,12 @@ module.exports = {
       }
     })
   },
-  editTemplate: (id, info) => {
+  editTemplate: (id, data) => {
     return new Promise(async (resolve, reject) => {
-      let { picture, details } = info
+      let { picture, info, signature } = data
       let { affectedRows } = await db.query(
-        'UPDATE id_template SET PictureX=?, PictureY=?, PictureHeight=?, PictureWidth=?, DetailsX=?, DetailsY=?, DetailsHeight=?, DetailsWidth=?, TimeStamp=NOW() WHERE ID=?',
-        [picture.x, picture.y, picture.height, picture.width, details.x, details.y, details.height, details.width, id]
+        'UPDATE id_template SET Picture=?, Info=?, Signature=?, TimeStamp=NOW() WHERE ID=?',
+        [picture, info, signature, id]
       )
       if (affectedRows > 0) {
         resolve()
@@ -177,31 +177,33 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       let template = await db.query('SELECT * FROM id_template WHERE ID=?', [cardid])
 
-      let {
-        Filename,
-        PictureX,
-        PictureY,
-        PictureHeight,
-        PictureWidth,
-        DetailsX,
-        DetailsY,
-        DetailsHeight,
-        DetailsWidth
-      } = template[0]
+      let { Filename, Picture, Info, Signature } = template[0]
+
+      Picture = Picture.split(',').map(Number)
+      Info = Info.split(',').map(Number)
+      Signature = Signature.split(',').map(Number)
 
       let profile = await Jimp.read(__dirname + '/uploads/default.jpg')
-      profile.resize(PictureHeight || 300, PictureWidth || 300)
+      let signature = await Jimp.read(__dirname + '/uploads/signature.png')
+
+      profile.resize(Picture[3] || 300, Picture[2] || 300)
+      signature.resize(Signature[3] || 200, Signature[2] || 400)
 
       let details = [`Student Number: [SAMPLE TEXT]`, `Name: [SAMPLE TEXT]`, `Course: [SAMPLE TEXT]`]
 
       Jimp.read(__dirname + '/templates/' + Filename, async (err, image) => {
         if (err) reject(err)
-        if (PictureX != 0 && PictureY != 0 && DetailsX != 0 && DetailsY != 0) {
+        let pictureLength = Picture.reduce((x, y) => x + y)
+        let infoLength = Info.reduce((x, y) => x + y)
+        let signatureLength = Signature.reduce((x, y) => x + y)
+
+        if (pictureLength != 0 && infoLength != 0 && signatureLength != 0) {
           let font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK)
           for (var i = 0, j = 0; i < details.length; i++, j += 50) {
-            image.print(font, DetailsX, DetailsY + j, details[i], DetailsWidth)
+            image.print(font, Info[0], Info[1] + j, details[i], Info[3])
           }
-          image.composite(profile, PictureX, PictureY)
+          image.composite(profile, Picture[0], Picture[1])
+          image.composite(signature, Signature[0], Signature[1])
         }
         resolve(await image.getBufferAsync(Jimp.MIME_PNG))
       })
@@ -214,11 +216,18 @@ module.exports = {
         db.query('SELECT * FROM id_template WHERE ID=?', [cardid])
       ])
 
-      let { Filename, PictureX, PictureY, DetailsX, DetailsY } = template[0]
+      let { Filename, Picture, Info, Signature } = template[0]
       let { FirstName, LastName, Course, ProfileFileName } = student[0]
 
+      Picture = Picture.split(',').map(Number)
+      Info = Info.split(',').map(Number)
+      Signature = Signature.split(',').map(Number)
+
       let profile = await Jimp.read(__dirname + '/uploads/' + ProfileFileName)
-      profile.resize(300, 300)
+      let signature = await Jimp.read(__dirname + '/uploads/' + SignatureFileName)
+
+      profile.resize(Picture[3] || 300, Picture[2] || 300)
+      signature.resize(Signature[3] || 200, Signature[2] || 400)
 
       let details = [`Student Number: ${studentno}`, `Name: ${FirstName} ${LastName}`, `Course: ${Course}`]
 
@@ -226,9 +235,10 @@ module.exports = {
         if (err) reject(err)
         let font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK)
         for (var i = 0, j = 0; i < details.length; i++, j += 50) {
-          image.print(font, DetailsX, DetailsY + j, details[i], 600)
+          image.print(font, Info[0], Info[1] + j, details[i], 600)
         }
-        image.composite(profile, PictureX, PictureY)
+        image.composite(profile, Picture[0], Picture[1])
+        image.composite(profile, Signature[0], Signature[1])
         resolve(await image.getBufferAsync(Jimp.MIME_JPEG))
       })
     })

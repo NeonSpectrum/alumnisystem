@@ -122,7 +122,7 @@ router.put('/user/:id/upload/:type', (req, res) => {
     } else {
       await setProfileFileName(req.params.id, filename)
     }
-    res.send({ success: true, filename })
+    res.send({ success: true, filename, type: req.params.type })
   })
 })
 

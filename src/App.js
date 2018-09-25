@@ -4,12 +4,12 @@ import Navbar from './Components/Navbar.component'
 import Login from './Pages/Login.page'
 
 import { connect } from 'react-redux'
-import { validateAuth } from './Global'
+import { BASE_NAME, validateAuth } from './Global'
 
 class App extends Component {
   render() {
     return (
-      <Router basename="/alumnisystem/">
+      <Router basename={BASE_NAME || '/'}>
         {sessionStorage.auth && validateAuth(JSON.parse(sessionStorage.auth)) ? <Navbar /> : <Login />}
       </Router>
     )

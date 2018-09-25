@@ -1,7 +1,12 @@
 import crypto from 'crypto'
 import axios from 'axios'
 
-export const { PUBLIC_URL, REACT_APP_API_URL: API_URL, REACT_APP_SOCKET_URL: SOCKET_URL } = process.env
+export const {
+  PUBLIC_URL,
+  REACT_APP_API_URL: API_URL,
+  REACT_APP_SOCKET_URL: SOCKET_URL,
+  REACT_APP_BASE_NAME: BASE_NAME
+} = process.env
 export const ENCRYPTION_KEY = 'W8pbSj8UVwVU0nuvLhcquia4jR3ViHMz'
 export const IV_LENGTH = 16
 

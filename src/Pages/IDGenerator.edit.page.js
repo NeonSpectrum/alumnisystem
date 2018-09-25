@@ -87,7 +87,8 @@ class IDGeneratorEdit extends Component {
     this.state = {
       image: null,
       picture: null,
-      details: null,
+      info: null,
+      signature: null,
       selectedShapeName: null
     }
     this.handleSave = this.handleSave.bind(this)
@@ -124,41 +125,24 @@ class IDGeneratorEdit extends Component {
         props.history.push('/id-generator/' + this.props.match.params.id)
       }
     } else if (props.data) {
-      let {
-        PictureX,
-        PictureY,
-        PictureHeight,
-        PictureWidth,
-        DetailsX,
-        DetailsY,
-        DetailsHeight,
-        DetailsWidth
-      } = props.data[0]
+      let { Picture, Info, Signature } = props.data[0]
 
       this.setState({
-        picture: {
-          x: PictureX,
-          y: PictureY,
-          height: PictureHeight,
-          width: PictureWidth
-        },
-        details: {
-          x: DetailsX,
-          y: DetailsY,
-          height: DetailsHeight,
-          width: DetailsWidth
-        }
+        picture: Picture.split(',').map(Number),
+        info: Info.split(',').map(Number),
+        signature: Signature.split(',').map(Number)
       })
     }
   }
 
   handleSave() {
     if (window.confirm('Are you sure do you want to save?')) {
-      const { picture, details } = this.state
+      const { picture, info, signature } = this.state
       const { id } = this.props.match.params
       this.props.saveTemplate(id, {
-        picture,
-        details
+        picture: picture.join(','),
+        info: info.join(','),
+        signature: signature.join(',')
       })
     }
   }
@@ -179,8 +163,8 @@ class IDGeneratorEdit extends Component {
 
     // find clicked rect by its name
     const name = e.target.name()
-    const rect = this.state[name]
-    if (rect) {
+
+    if (this.state[name]) {
       this.setState({
         selectedShapeName: name
       })
@@ -193,15 +177,12 @@ class IDGeneratorEdit extends Component {
 
   handleRectChange(name, newProps) {
     this.setState({
-      [name]: {
-        ...this.state[name],
-        ...newProps
-      }
+      [name]: [newProps.x, newProps.y, newProps.height, newProps.width]
     })
   }
 
   render() {
-    const { image, height, width, picture, details, selectedShapeName } = this.state
+    const { image, height, width, picture, info, signature, selectedShapeName } = this.state
     const { loading = true, data } = this.props
     return loading || !image ? (
       <Loading />
@@ -213,10 +194,10 @@ class IDGeneratorEdit extends Component {
               <Image image={image} />
               <Rectangle
                 name="picture"
-                x={picture.x}
-                y={picture.y}
-                height={picture.height || 300}
-                width={picture.width || 300}
+                x={picture[0]}
+                y={picture[1]}
+                height={picture[2] || 300}
+                width={picture[3] || 300}
                 draggable={true}
                 stroke="black"
                 text="hi"
@@ -225,15 +206,27 @@ class IDGeneratorEdit extends Component {
                 }}
               />
               <Rectangle
-                name="details"
-                x={details.x}
-                y={details.y}
-                height={details.height || 300}
-                width={details.width || 600}
+                name="info"
+                x={info[0]}
+                y={info[1]}
+                height={info[2] || 300}
+                width={info[3] || 600}
                 draggable={true}
                 stroke="black"
                 onTransform={newProps => {
-                  this.handleRectChange('details', newProps)
+                  this.handleRectChange('info', newProps)
+                }}
+              />
+              <Rectangle
+                name="signature"
+                x={signature[0]}
+                y={signature[1]}
+                height={signature[2] || 200}
+                width={signature[3] || 400}
+                draggable={true}
+                stroke="black"
+                onTransform={newProps => {
+                  this.handleRectChange('signature', newProps)
                 }}
               />
               <TransformerComponent selectedShapeName={selectedShapeName} />
