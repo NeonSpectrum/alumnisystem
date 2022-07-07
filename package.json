@@ -15,7 +15,7 @@
     "gm": "^1.23.1",
     "jimp": "^0.4.0",
     "konva": "^2.3.0",
-    "moment": "^2.22.2",
+    "moment": "^2.29.4",
     "mysql": "^2.16.0",
     "react": "^16.4.2",
     "react-data-components": "^1.2.0",
